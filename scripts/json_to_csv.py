@@ -39,6 +39,6 @@ def json_to_csv(json_filename, csv_filename):
         print(f"Error: {e}")
 
 # Call the function with your file names
-json_filename = "data/deribit_data.json"  # Path to your JSON file
-csv_filename = "data/deribit_data.csv"  # Output CSV file
+json_filename = "data/test_deribit_data.json"  # Path to your JSON file
+csv_filename = "data/test_deribit_data.csv"  # Output CSV file
 json_to_csv(json_filename, csv_filename)
