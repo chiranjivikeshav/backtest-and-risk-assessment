@@ -31,24 +31,5 @@ for t in range(0, len(X_test) - test_window_size, step_size):
     Y_pred = scaler.inverse_transform(Y_pred)
     Y_actual = scaler.inverse_transform(Y_actual)
 
-    # Compute Returns
-    df = pd.DataFrame({"Actual": Y_actual.flatten(), "Predicted": Y_pred.flatten()})
-    df["Return_Actual"] = df["Actual"].pct_change()
-    df["Return_Predicted"] = df["Predicted"].pct_change()
+    
 
-    # Compute Strategy Performance
-    df["Strategy_Return"] = df["Return_Predicted"] * df["Return_Actual"].shift(-1)
-
-    # Compute Metrics
-    total_return = df["Strategy_Return"].sum()
-    mse = np.mean((df["Predicted"] - df["Actual"])**2)
-
-    results.append({"Start": t, "End": t+test_window_size, "Total_Return": total_return, "MSE": mse})
-
-    print(f"Backtest {t}-{t+test_window_size}: Return={total_return:.4f}, MSE={mse:.4f}")
-
-# Convert results to DataFrame
-results_df = pd.DataFrame(results)
-results_df.to_csv("backtest_results.csv", index=False)
-
-print("Backtesting Complete! Results saved to backtest_results.csv")
