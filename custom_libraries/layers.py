@@ -1,55 +1,49 @@
 import numpy as np
 
-class LSTMCustom:
-    def __init__(self, input_size, hidden_size):
-        self.hidden_size = hidden_size
-        self.input_size = input_size
+class DenseLayer:
+    def __init__(self, input_size, output_size, activation='relu'):
+        self.weights = np.random.randn(input_size, output_size) * 0.01  # Initialize weights
+        self.biases = np.zeros((1, output_size))  # Initialize biases
+        self.activation = activation
+        self.output = None
+        self.input = None
+        self.d_weights = None
+        self.d_biases = None
+        self.d_input = None
 
-        # Initialize weight matrices
-        self.Wf = np.random.randn(hidden_size, hidden_size + input_size)
-        self.Wi = np.random.randn(hidden_size, hidden_size + input_size)
-        self.Wo = np.random.randn(hidden_size, hidden_size + input_size)
-        self.Wc = np.random.randn(hidden_size, hidden_size + input_size)
+    def forward(self, input_data):
+        self.input = input_data
+        self.output = np.dot(input_data, self.weights) + self.biases
+        if self.activation == 'relu':
+            self.output = np.maximum(0, self.output)
+        return self.output
 
-        # Initialize biases
-        self.bf = np.zeros((hidden_size, 1))
-        self.bi = np.zeros((hidden_size, 1))
-        self.bo = np.zeros((hidden_size, 1))
-        self.bc = np.zeros((hidden_size, 1))
+    def backward(self, d_output, learning_rate):
+        if self.activation == 'relu':
+            d_output = d_output * (self.output > 0)  # Derivative of ReLU
 
-    def sigmoid(self, x):
-        return 1 / (1 + np.exp(-x))
+        self.d_weights = np.dot(self.input.T, d_output)
+        self.d_biases = np.sum(d_output, axis=0, keepdims=True)
+        self.d_input = np.dot(d_output, self.weights.T)
 
-    def tanh(self, x):
-        return np.tanh(x)
+        self.weights -= learning_rate * self.d_weights
+        self.biases -= learning_rate * self.d_biases
+        return self.d_input
 
-    def forward(self, x, h_prev, c_prev):
-        concat = np.vstack((h_prev, x))  
-
-        # Compute gate activations
-        ft = self.sigmoid(np.dot(self.Wf, concat) + self.bf)
-        it = self.sigmoid(np.dot(self.Wi, concat) + self.bi)
-        ot = self.sigmoid(np.dot(self.Wo, concat) + self.bo)
-        c_tilde = self.tanh(np.dot(self.Wc, concat) + self.bc)
-
-        # Update cell state and hidden state
-        c_next = ft * c_prev + it * c_tilde
-        h_next = ot * self.tanh(c_next)
-
-        return h_next, c_next
-
-class DenseCustom:
-    def __init__(self, input_size, output_size):
-        self.W = np.random.randn(output_size, input_size)
-        self.b = np.zeros((output_size, 1))
-
-    def forward(self, x):
-        return np.dot(self.W, x) + self.b
-
-class DropoutCustom:
+class DropoutLayer:
     def __init__(self, rate):
         self.rate = rate
+        self.mask = None
+        self.output = None
 
-    def forward(self, x):
-        mask = np.random.rand(*x.shape) > self.rate  
-        return x * mask / (1 - self.rate)  
+    def forward(self, input_data, training=True):
+        if training:
+            self.mask = (np.random.rand(*input_data.shape) > self.rate) / (1 - self.rate)
+            self.output = input_data * self.mask
+        else:
+            self.output = input_data
+        return self.output
+
+    def backward(self, d_output, learning_rate):
+        return d_output * self.mask
+
