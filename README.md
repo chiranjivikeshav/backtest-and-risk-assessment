@@ -31,5 +31,4 @@ pip install -r requirements.txt
 
 ## 📄 Project Presentation and Report
 
-You can view the detailed project presentation [here](./Doc/Presentation.pdf).
-You can view the detailed project Report [here](./Doc/Report.pdf).
+You can view the detailed project presentation [here](./Doc/Presentation.pdf) and report [here](./Doc/Report.pdf).
